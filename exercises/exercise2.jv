@@ -6,8 +6,8 @@ pipeline BaumPipeline {
         -> BaumartDeutschColumnDeleter
         -> BaumTableInterpreter
         -> BaumLoader;
-//h
 
+    
  constraint BaumIdGeoPointsFormat oftype RegexConstraint {
         regex: /^\d{1,3}\.\d+, \d{1,3}\.\d+$/;
     }
