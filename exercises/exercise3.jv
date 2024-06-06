@@ -65,7 +65,7 @@ pipeline WarenPipeline {
 
     block HeaderWriter oftype CellWriter {
         at: range A1:E1;
-        write: ["year", "month", "Waren_id", "Waren_name", "Waren_source"];
+        write: ["year", "month", "goods_id", "goods_name", "goods_source"];
     }
 
     block QuantityHeaderWriter oftype CellWriter {
@@ -78,9 +78,9 @@ pipeline WarenPipeline {
         columns: [
             "year" oftype integer,
             "month" oftype Month,
-            "Waren_id" oftype WarenId,
-            "Waren_name" oftype text,
-            "Waren_source" oftype text,
+            "goods_id" oftype WarenId,
+            "goods_name" oftype text,
+            "goods_source" oftype text,
             "abroad" oftype integer,
             "total" oftype integer
         ];
