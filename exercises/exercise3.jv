@@ -1,0 +1,94 @@
+pipeline WarenPipeline {
+
+    WarenHttpExtractor
+        -> WarenTextFileInterpreter
+        -> WarenCSVInterpreter
+        -> MetadataRemover
+
+        -> HeaderWriter
+        -> QuantityHeaderWriter
+
+        -> FooterRemover
+
+        -> WarenTableInterpreter
+        -> WarenLoader;
+
+    valuetype WarenId oftype text {
+        constraints: [ WarenIdFormat ];
+    }
+
+    constraint WarenIdFormat oftype RegexConstraint {
+        regex: /^NST7-[0-9A-Z]{3}$/;
+    }
+
+    valuetype Month oftype text {
+        constraints: [ MonthFormat ];
+    }
+
+    constraint MonthFormat oftype AllowlistConstraint {
+        allowlist: [
+            "Januar", "Februar", "März", "April", "Mai", "Juni",
+            "Juli", "August", "September", "Oktober", "November", "Dezember"
+        ];
+    }
+
+    block WarenHttpExtractor oftype HttpExtractor {
+        url: "https://www-genesis.destatis.de/genesis/downloads/00/tables/46131-0014_00.csv";
+    }
+
+     block WarenTextFileInterpreter oftype TextFileInterpreter {
+        encoding: "latin2";   // Ensure correct encoding for German umlauts
+    }
+
+    block WarenCSVInterpreter oftype CSVInterpreter {
+        delimiter: ';';
+    }
+
+    block MetadataRemover oftype RowDeleter {
+        delete: [row 1, row 2, row 3, row 4, row 5, row 6, row 7];  // Skip the first 7 metadata rows
+    }
+
+    block FooterRemover oftype RowDeleter {
+        delete: [row 41326, row 41327, row 41328, row 41329, row 41330];  // Skip the last 5 metadata rows
+    }
+
+
+    block ColumnDeleter oftype ColumnDeleter {
+        delete: [
+            column F, column G, column H, column I, column J, column K, column L, column M,
+            column N, column O, column P, column Q, column R, column S, column T, column U,
+            column V, column W, column X, column Y, column Z, column AA, column AB, column AC,
+            column AD, column AE, column AF, column AG, column AH, column AI, column AJ, column AK,
+            column AL, column AM, column AN, column AO, column AP, column AQ, column AR, column AS
+        ];  // Delete columns we don't need
+    }
+
+    block HeaderWriter oftype CellWriter {
+        at: range A1:E1;
+        write: ["year", "month", "Waren_id", "Waren_name", "Waren_source"];
+    }
+
+    block QuantityHeaderWriter oftype CellWriter {
+        at: range AT1:AU1;
+        write: ["abroad", "total"];
+    }
+
+    block WarenTableInterpreter oftype TableInterpreter {
+        header: true;
+        columns: [
+            "year" oftype integer,
+            "month" oftype Month,
+            "Waren_id" oftype WarenId,
+            "Waren_name" oftype text,
+            "Waren_source" oftype text,
+            "abroad" oftype integer,
+            "total" oftype integer
+        ];
+    }
+
+    block WarenLoader oftype SQLiteLoader {
+        table: "goods";
+        file: "./goodsTransportedByTrain.sqlite";
+    }
+
+}
