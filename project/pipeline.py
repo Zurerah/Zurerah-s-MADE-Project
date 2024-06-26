@@ -19,6 +19,6 @@ df = pd.read_csv('https://data.humdata.org/dataset/469a7757-302c-4176-bf82-4a452
 df.dropna()
 
 # %%
-df.to_csv("../data/output.csv")
+df.to_csv("data/output.csv")
 
 
